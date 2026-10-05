@@ -2,200 +2,329 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Deadlock Draft Overlay - Vertical</title>
+    <title>Deadlock Draft Overlay</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap');
+
+        /* --- CUSTOM DEADLOCK FONT --- */
+        @font-face {
+            font-family: 'ValvePulp';
+            src: url('valvepulp-bold.ttf') format('truetype');
+        }
+
         /* --- BASE SETUP --- */
         body {
             margin: 0;
             padding: 0;
             width: 1920px;
             height: 1080px;
-            background-color: #1a1a1a; /* Can replace with a map background image */
+            background-color: #0d0d0d;
+            background-image: url('bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'ValvePulp', 'Oswald', sans-serif;
+            letter-spacing: 1px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: center; 
+            gap: 40px; 
             box-sizing: border-box;
         }
 
-        /* --- TEAM SECTIONS --- */
+        /* --- TEAM SECTIONS (Row Layout) --- */
         .team-section {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
+            justify-content: center;
             width: 100%;
-            padding: 25px 0;
+            gap: 30px; 
         }
 
-        /* --- HEADERS --- */
-        .team-header {
+        /* --- TEAM INFO BOX (Left Side) --- */
+        .team-info-box {
             display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            width: 1700px;
-            height: 80px;
-            background-color: rgba(30, 30, 30, 0.9);
-            border-radius: 12px;
-            padding: 0 30px;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.5);
+            width: 250px;
+            height: 360px;
+            background-color: rgba(15, 15, 15, 0.85); 
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        #blue-section .team-header {
-            margin-bottom: 20px;
-            border-bottom: 5px solid #569cd6;
-        }
-
-        #red-section .team-header {
-            flex-direction: row-reverse;
-            margin-top: 20px;
-            border-top: 5px solid #f44747;
-        }
+        #team1-section .team-info-box { border-left: 4px solid rgba(64, 128, 255, 0.8); }
+        #team2-section .team-info-box { border-left: 4px solid rgba(255, 184, 64, 0.8); }
 
         .team-logo {
-            width: 60px;
-            height: 60px;
+            width: 120px;
+            height: 120px;
             object-fit: contain;
+            margin-bottom: 20px;
         }
 
         .team-name {
-            font-size: 42px;
+            font-size: 24px;
             font-weight: bold;
-            margin: 0 25px;
-            letter-spacing: 2px;
             text-transform: uppercase;
+            text-align: center;
+            word-wrap: break-word;
+            width: 100%;
+        }
+
+        /* --- BANS --- */
+        .bans-label {
+            font-size: 14px;
+            color: #ff4d4d;
+            letter-spacing: 3px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .team-bans {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            flex-wrap: wrap;         
+            justify-content: center; 
+            max-width: 220px;        
+        }
+
+        .ban-icon {
+            width: 45px;             
+            height: 45px;
+            background-size: cover;
+            background-position: center top;
+            border-radius: 4px;
+            border: 2px solid #ff4d4d;
+            filter: grayscale(100%) opacity(0.6); 
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
         }
 
         /* --- HORIZONTAL ROSTERS --- */
         .roster {
             display: flex;
             flex-direction: row;
-            gap: 25px;
-            width: 1700px;
-            justify-content: center;
+            gap: 15px; 
         }
 
         /* --- VERTICAL PLAYER SLOTS --- */
         .player-slot {
-            width: 260px;
-            height: 380px; /* Tall vertical portrait size */
-            background-color: rgba(40, 40, 40, 0.95);
-            border-radius: 12px;
+            width: 200px;
+            height: 360px;
+            background: linear-gradient(180deg, rgba(25, 25, 25, 0.4) 0%, rgba(10, 10, 10, 0.95) 100%);
+            border-radius: 6px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.6);
-            border: 3px solid #333;
+            border: 1px solid; 
         }
 
-        #blue-section .player-slot { border-color: #569cd6; }
-        #red-section .player-slot { border-color: #f44747; }
+        #team1-section .player-slot { 
+            border-color: rgba(64, 128, 255, 0.4); 
+            box-shadow: 0 0 15px rgba(64, 128, 255, 0.1), 0 8px 20px rgba(0,0,0,0.7);
+        }
+        #team2-section .player-slot { 
+            border-color: rgba(255, 184, 64, 0.4); 
+            box-shadow: 0 0 15px rgba(255, 184, 64, 0.1), 0 8px 20px rgba(0,0,0,0.7);
+        }
 
         .hero-box {
             width: 100%;
             height: 100%;
             background-size: cover;
-            background-position: center top; /* Anchors the image to the top so heads aren't cut off */
+            background-position: center top;
             position: absolute;
             top: 0;
             left: 0;
-            transition: background-image 0.3s ease;
         }
 
-        /* Text bar at the bottom of the portrait */
         .player-info-bar {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,0.7) 70%, transparent);
-            padding: 20px 15px 10px 15px;
+            background: linear-gradient(to top, rgba(0,0,0,1) 40%, rgba(0,0,0,0.6) 80%, transparent);
+            padding: 25px 10px 12px 10px;
             box-sizing: border-box;
             text-align: center;
         }
 
         .hero-name {
-            font-size: 18px;
-            color: #aaaaaa;
+            font-size: 15px;
+            color: #999999;
             text-transform: uppercase;
-            font-weight: 800;
             margin-bottom: 2px;
         }
 
         .player-name {
-            font-size: 26px;
-            font-weight: bold;
+            font-size: 20px;
             color: #ffffff;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
-        /* --- CENTER MATCH INFO --- */
+        /* --- CENTER SECTION (Layout & Score Box) --- */
         .center-section {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 65%);
+            padding: 15px 0;
+        }
+
+        .center-content-wrapper {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            width: 1555px; 
+            gap: 30px;
+        }
+
+        .match-score-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 250px;
+            height: 110px;
+            background-color: rgba(15, 15, 15, 0.85);
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-sizing: border-box;
+            padding: 10px;
+        }
+
+        .match-format {
+            font-size: 15px;
+            color: #aaaaaa;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: bold;
+        }
+
+        .match-score-display {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 4px;
+        }
+
+        .score-digit {
+            font-size: 46px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .score-dash {
+            font-size: 32px;
+            color: #555555;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .center-brand-wrapper {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            gap: 50px;
+        }
+
+        .center-text-block {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex: 1;
-            background: rgba(0,0,0,0.4);
-            box-shadow: 0 0 50px rgba(0,0,0,0.6);
         }
 
-        .league-info {
-            font-size: 38px;
-            font-weight: bold;
-            color: #e0e0e0;
-            text-transform: uppercase;
-            letter-spacing: 6px;
+        .center-logo {
+            height: 90px;
+            width: auto;
+            max-width: 200px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));
         }
-        
-        .sponsor-info {
-            font-size: 22px;
-            color: #888;
-            margin-top: 10px;
-            letter-spacing: 3px;
+
+        /* --- ANIMATIONS --- */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.85); }
+            100% { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
 <body>
-
-    <!-- BLUE TEAM (TOP) -->
-    <div id="blue-section" class="team-section">
-        <div class="team-header">
-            <img class="team-logo" src="" id="blue-logo" style="display: none;">
-            <div class="team-name" id="blue-name">PFW</div>
+    <!-- TEAM 1 (TOP) -->
+    <div id="team1-section" class="team-section">
+        <div class="team-info-box">
+            <img class="team-logo" src="" id="team1-logo" style="display: none;">
+            <div class="team-name" id="team1-name">PFW</div>
+            <div class="bans-label" id="team1-bans-label" style="display:none;">BANS</div>
+            <div class="team-bans" id="team1-bans"></div>
         </div>
         
-        <div class="roster" id="blue-roster">
-            <!-- JS Generated -->
-        </div>
+        <div class="roster" id="team1-roster"></div>
     </div>
 
-    <!-- CENTER INFO -->
+    <!-- CENTER INFO & SCORE -->
     <div class="center-section">
-        <div class="league-info" id="league-text">NACE Week 1</div>
-        <div class="sponsor-info" id="sponsor-text">PURDUE FORT WAYNE ESPORTS</div>
+        <div class="center-content-wrapper">
+            <!-- Left Score & Format Box -->
+            <div class="match-score-box">
+                <div class="match-format" id="match-format-text">BEST OF 3</div>
+                <div class="match-score-display">
+                    <span id="team1-score" class="score-digit">0</span>
+                    <span class="score-dash">:</span>
+                    <span id="team2-score" class="score-digit">0</span>
+                </div>
+            </div>
+
+            <!-- Brand, Match & Sponsor Area -->
+            <div class="center-brand-wrapper">
+                <img class="center-logo" src="deadlock_logo.png" alt="Deadlock">
+                <div class="center-text-block">
+                    <div class="league-info" id="league-text">NACE Week 1</div>
+                    <div class="sponsor-info" id="sponsor-text">PURDUE FORT WAYNE ESPORTS</div>
+                </div>
+                <img class="center-logo" src="collegedeadlock.png" id="center-sponsor-logo" alt="Sponsor">
+            </div>
+        </div>
     </div>
 
-    <!-- RED TEAM (BOTTOM) -->
-    <div id="red-section" class="team-section">
-        <div class="roster" id="red-roster">
-            <!-- JS Generated -->
+    <!-- TEAM 2 (BOTTOM) -->
+    <div id="team2-section" class="team-section">
+        <div class="team-info-box">
+            <img class="team-logo" src="" id="team2-logo" style="display: none;">
+            <div class="team-name" id="team2-name">OPP</div>
+            <div class="bans-label" id="team2-bans-label" style="display:none;">BANS</div>
+            <div class="team-bans" id="team2-bans"></div>
         </div>
 
-        <div class="team-header">
-            <img class="team-logo" src="" id="red-logo" style="display: none;">
-            <div class="team-name" id="red-name">OPP</div>
-        </div>
+        <div class="roster" id="team2-roster"></div>
     </div>
 
     <script>
-        // --- GENERATE THE 6 ROSTER SLOTS ---
         function createSlots(side) {
             const rosterDiv = document.getElementById(`${side}-roster`);
             for (let i = 0; i < 6; i++) {
                 rosterDiv.innerHTML += `
-                    <div class="player-slot">
+                    <div class="player-slot" id="${side}-slot-${i}">
                         <div class="hero-box" id="${side}-hero-${i}"></div>
                         <div class="player-info-bar">
                             <div class="hero-name" id="${side}-heroname-${i}"></div>
@@ -205,11 +334,15 @@
                 `;
             }
         }
-        createSlots('blue');
-        createSlots('red');
+        createSlots('team1');
+        createSlots('team2');
 
-        // --- WEBSOCKET CONNECTION ---
         const ws = new WebSocket('ws://localhost:8765');
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 255, g: 255, b: 255 };
+        }
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -218,11 +351,34 @@
             // Meta Info
             document.getElementById('league-text').textContent = data.patch;
             document.getElementById('sponsor-text').textContent = data.sponsor;
+            document.getElementById('match-format-text').textContent = data.match_format || "BEST OF 3";
+            
+            // --- DYNAMIC SPONSOR LOGO ---
+            const centerSponsorLogo = document.getElementById('center-sponsor-logo');
+            const sponsorLogoFile = data.sponsor_logo || "collegedeadlock.png";
+            centerSponsorLogo.src = sponsorLogoFile + "?t=" + timeCache;
+            centerSponsorLogo.style.display = 'block';
 
-            ['blue', 'red'].forEach(side => {
+            // Update & Color Scores
+            const t1ScoreEl = document.getElementById('team1-score');
+            const t2ScoreEl = document.getElementById('team2-score');
+            const t1Color = (data.team1 && data.team1.color) || '#4080ff';
+            const t2Color = (data.team2 && data.team2.color) || '#ffb840';
+
+            t1ScoreEl.textContent = data.team1 ? data.team1.score : 0;
+            t1ScoreEl.style.color = t1Color;
+            t1ScoreEl.style.textShadow = `0 0 15px ${t1Color}66`;
+
+            t2ScoreEl.textContent = data.team2 ? data.team2.score : 0;
+            t2ScoreEl.style.color = t2Color;
+            t2ScoreEl.style.textShadow = `0 0 15px ${t2Color}66`;
+
+            const useHeroNames = data.use_hero_names;
+
+            ['team1', 'team2'].forEach(side => {
                 const teamData = data[side];
                 
-                // Header Updates
+                // Header & Logo
                 document.getElementById(`${side}-name`).textContent = teamData.name;
                 const logoEl = document.getElementById(`${side}-logo`);
                 if (teamData.logo) {
@@ -232,28 +388,69 @@
                     logoEl.style.display = 'none';
                 }
 
-                // Roster Updates
-                for(let i = 0; i < 6; i++) {
-                    const playerEl = document.getElementById(`${side}-player-${i}`);
-                    if(playerEl && teamData.players && teamData.players[i]) {
-                        playerEl.textContent = teamData.players[i];
-                    }
+                // Bans Render
+                const bansContainer = document.getElementById(`${side}-bans`);
+                const bansLabel = document.getElementById(`${side}-bans-label`);
+                bansContainer.innerHTML = ''; 
+                
+                let hasBans = false;
+                if (teamData.bans) {
+                    teamData.bans.forEach(ban => {
+                        if (ban && ban !== "None") {
+                            hasBans = true;
+                            const fileName = ban.toLowerCase().replace(/[^a-z]/g, '');
+                            bansContainer.innerHTML += `<div class="ban-icon" style="background-image: url('charicons/${fileName}.png')"></div>`;
+                        }
+                    });
+                }
+                bansLabel.style.display = hasBans ? 'block' : 'none';
 
+                // Colors
+                const teamColor = teamData.color || (side === 'team1' ? '#4080ff' : '#ffb840');
+                const rgb = hexToRgb(teamColor);
+                const infoBox = document.querySelector(`#${side}-section .team-info-box`);
+                if(infoBox) {
+                    infoBox.style.borderLeft = `4px solid rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`;
+                }
+
+                // Roster & Hero Animations
+                for(let i = 0; i < 6; i++) {
+                    const slotEl = document.getElementById(`${side}-slot-${i}`);
+                    const playerEl = document.getElementById(`${side}-player-${i}`);
                     const heroNameEl = document.getElementById(`${side}-heroname-${i}`);
                     const heroBoxEl = document.getElementById(`${side}-hero-${i}`);
                     
+                    if(slotEl) {
+                        slotEl.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`;
+                        slotEl.style.boxShadow = `0 0 15px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1), 0 8px 20px rgba(0,0,0,0.7)`;
+                    }
+
+                    let playerName = teamData.players && teamData.players[i] !== undefined ? teamData.players[i] : "";
+                    let heroName = "";
+
                     if(teamData.picks && teamData.picks[i] && teamData.picks[i] !== "None") {
-                        const hero = teamData.picks[i];
-                        heroNameEl.textContent = hero;
+                        heroName = teamData.picks[i];
+                        const fileName = heroName.toLowerCase().replace(/[^a-z]/g, '');
                         
-                        // Converts string exact to your folder layout (e.g., "Lady Geist" -> "ladygeist")
-                        const fileName = hero.toLowerCase().replace(/[^a-z]/g, '');
-                        
-                        // Loads from your images folder
-                        heroBoxEl.style.backgroundImage = `url('images/${fileName}.png')`; 
+                        if (heroBoxEl.dataset.currentHero !== heroName) {
+                            heroBoxEl.dataset.currentHero = heroName;
+                            heroBoxEl.style.backgroundImage = `url('charicons/${fileName}.png')`; 
+                            heroBoxEl.style.animation = 'none';
+                            void heroBoxEl.offsetWidth; 
+                            heroBoxEl.style.animation = 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                        }
                     } else {
-                        heroNameEl.textContent = "";
+                        heroBoxEl.dataset.currentHero = "None";
                         heroBoxEl.style.backgroundImage = "none";
+                        heroBoxEl.style.animation = 'none';
+                    }
+
+                    if (useHeroNames) {
+                        playerEl.textContent = heroName;
+                        heroNameEl.textContent = ""; 
+                    } else {
+                        playerEl.textContent = playerName;
+                        heroNameEl.textContent = heroName;
                     }
                 }
             });

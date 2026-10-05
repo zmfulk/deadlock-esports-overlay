@@ -9,6 +9,7 @@ import shutil
 import http.server
 import socketserver
 import sys
+from tkinter import colorchooser
 
 def get_base_dir():
     if getattr(sys, 'frozen', False):
@@ -21,7 +22,7 @@ SAVE_FILE = os.path.join(BASE_DIR, "deadlock_draft_state.json")
 
 # Static list of Deadlock Heroes
 HERO_LIST = [
-    "None", "Abrams", "Apollo", "Baba", "Bebop", "Billy", "Calico", "Celeste", 
+    "None", "Abrams", "Apollo", "Baba", "Bebop", "Mirage", "Calico", "Celeste", 
     "Deadman Danny", "The Doorman", "Drifter", "Dynamo", "Graves", "Grey Talon", "Haze", 
     "Holliday", "Infernus", "Ivy", "Kelvin", "Lady Geist", "Lash", "McGinnis", 
     "Mina", "Mirage", "Mo & Krill", "Nurse Harrow", "Paige", "Paradox", "Pocket", 
@@ -32,19 +33,26 @@ HERO_LIST = [
 default_state = {
     "patch": "Week 1",
     "sponsor": "College Deadlock",
-    "blue": {
+    "sponsor_logo": "collegedeadlock.png",
+    "match_format": "Best of 2",
+    "use_hero_names": False,
+    "team1": {
         "name": "PFW",
         "logo": "",
         "score": 0,
+        "color": "#4080ff",
         "players": ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5", "Player 6"],
-        "picks": ["None", "None", "None", "None", "None", "None"]
+        "picks": ["None", "None", "None", "None", "None", "None"],
+        "bans": ["None", "None"]
     },
-    "red": {
+    "team2": {
         "name": "OPP",
         "logo": "",
         "score": 0,
+        "color": "#ffb840",
         "players": ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5", "Player 6"],
-        "picks": ["None", "None", "None", "None", "None", "None"]
+        "picks": ["None", "None", "None", "None", "None", "None"],
+        "bans": ["None", "None"]
     }
 }
 
@@ -186,32 +194,66 @@ class OverlayController(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Deadlock Broadcast Controller")
-        self.geometry("900x650")
+        self.geometry("950x700")
         self.configure(padx=10, pady=10)
 
         # --- GUI LAYOUT ---
         meta_frame = ttk.LabelFrame(self, text="Broadcast Match Info", padding=8)
         meta_frame.pack(fill="x", pady=5)
 
-        ttk.Label(meta_frame, text="League/Match:").grid(row=0, column=0, padx=4)
+        ttk.Label(meta_frame, text="League/Match:").grid(row=0, column=0, padx=4, sticky="w")
         self.patch_entry = ttk.Entry(meta_frame, width=20)
         self.patch_entry.insert(0, state["patch"])
         self.patch_entry.grid(row=0, column=1, padx=4)
 
-        ttk.Label(meta_frame, text="Sponsor/Bottom Text:").grid(row=0, column=2, padx=4)
+        ttk.Label(meta_frame, text="Sponsor/Bottom Text:").grid(row=0, column=2, padx=4, sticky="w")
         self.sponsor_entry = ttk.Entry(meta_frame, width=25)
         self.sponsor_entry.insert(0, state["sponsor"])
         self.sponsor_entry.grid(row=0, column=3, padx=4)
 
+        # Row 1: Sponsor Logo & Match Format
+        ttk.Label(meta_frame, text="Sponsor Logo:").grid(row=1, column=0, padx=4, sticky="w", pady=4)
+        self.sponsor_logo_var = tk.StringVar(value=state.get("sponsor_logo") or "collegedeadlock.png")
+        
+        def browse_sponsor_logo():
+            filename = filedialog.askopenfilename(
+                title="Select Sponsor Logo",
+                filetypes=[("Image Files", "*.png *.jpg *.jpeg *.webp *.svg")]
+            )
+            if filename:
+                ext = os.path.splitext(filename)[1]
+                local_name = f"center_sponsor_logo{ext}"
+                dest_path = os.path.join(BASE_DIR, local_name)
+                try:
+                    shutil.copy(filename, dest_path)
+                    self.sponsor_logo_var.set(local_name)  
+                    self.push_updates()
+                except Exception as e:
+                    print(f"Failed to copy image: {e}")
+
+        ttk.Button(meta_frame, textvariable=self.sponsor_logo_var, width=15, command=browse_sponsor_logo).grid(row=1, column=1, padx=4, sticky="w")
+
+        ttk.Label(meta_frame, text="Match Format:").grid(row=1, column=2, padx=4, sticky="w")
+        self.format_entry = ttk.Entry(meta_frame, width=25)
+        self.format_entry.insert(0, state.get("match_format", "Best of 3"))
+        self.format_entry.grid(row=1, column=3, padx=4)
+
+        # Row 2: Override Checkbox & Swap Button
+        self.use_hero_names_var = tk.BooleanVar(value=state.get("use_hero_names", False))
+        ttk.Checkbutton(
+            meta_frame, text="Override Player Names with Hero Names",
+            variable=self.use_hero_names_var, command=self.push_updates
+        ).grid(row=2, column=0, columnspan=4, pady=5, sticky="w", padx=4)
+
         ttk.Button(
             meta_frame, text="Swap Teams ⇄", command=self.swap_teams
-        ).grid(row=0, column=4, padx=(20, 0))
+        ).grid(row=0, column=4, rowspan=3, padx=(20, 0), sticky="ns")
 
         teams_container = ttk.Frame(self)
         teams_container.pack(fill="both", expand=True, pady=5)
 
-        self.blue_widgets = self._build_team_column(teams_container, "Blue Side", "blue", 0)
-        self.red_widgets = self._build_team_column(teams_container, "Red Side", "red", 1)
+        self.team1_widgets = self._build_team_column(teams_container, "Team 1", "team1", 0)
+        self.team2_widgets = self._build_team_column(teams_container, "Team 2", "team2", 1)
 
         broadcast_btn = tk.Button(
             self, text="BROADCAST UPDATE TO OVERLAY", command=self.push_updates,
@@ -260,12 +302,69 @@ class OverlayController(tk.Tk):
         logo_btn = ttk.Button(info_frame, textvariable=logo_path_var, width=10, command=browse_logo)
         logo_btn.grid(row=2, column=1, padx=4, pady=2)
 
+        ttk.Label(info_frame, text="Color:").grid(row=3, column=0, sticky="w")
+        current_color = state[side_key].get("color", "#ffffff")
+        color_var = tk.StringVar(value=current_color)
+
+        def pick_color():
+            color_code = colorchooser.askcolor(title="Choose Team Color", initialcolor=color_var.get())
+            if color_code[1]: 
+                color_var.set(color_code[1])
+                color_btn.config(bg=color_code[1])
+                self.push_updates()
+
+        color_btn = tk.Button(info_frame, text="Select Color", bg=current_color, command=pick_color, width=10)
+        color_btn.grid(row=3, column=1, padx=4, pady=2)
+
+        # --- BANS (DYNAMIC) ---
+        ban_frame = ttk.LabelFrame(frame, text="Hero Bans", padding=6)
+        ban_frame.pack(fill="x", pady=6)
+
+        ban_inner_frame = ttk.Frame(ban_frame)
+        ban_inner_frame.pack(side="left", fill="x", expand=True)
+
+        ban_ctrl_frame = ttk.Frame(ban_frame)
+        ban_ctrl_frame.pack(side="right", padx=4)
+
+        ban_combos = []
+
+        def build_ban_ui():
+            for widget in ban_inner_frame.winfo_children():
+                widget.destroy()
+            ban_combos.clear()
+            
+            bans_list = state[side_key].get("bans", ["None", "None"])
+            for i, ban_val in enumerate(bans_list):
+                cb = SearchableDropdown(ban_inner_frame, values=HERO_LIST, width=12)
+                cb.set(ban_val)
+                cb.grid(row=i//3, column=i%3, padx=2, pady=2)
+                cb.bind("<<ComboboxSelected>>", lambda e: self.push_updates())
+                ban_combos.append(cb)
+
+        def add_ban():
+            state[side_key]["bans"] = [cb.get() for cb in ban_combos]
+            state[side_key]["bans"].append("None")
+            build_ban_ui()
+            self.push_updates()
+
+        def remove_ban():
+            state[side_key]["bans"] = [cb.get() for cb in ban_combos]
+            if len(state[side_key]["bans"]) > 0:
+                state[side_key]["bans"].pop()
+                build_ban_ui()
+                self.push_updates()
+
+        ttk.Button(ban_ctrl_frame, text="+", width=3, command=add_ban).pack(side="top", pady=1)
+        ttk.Button(ban_ctrl_frame, text="-", width=3, command=remove_ban).pack(side="bottom", pady=1)
+
+        build_ban_ui()
+
+        # --- HERO PICKS ---
         pick_frame = ttk.LabelFrame(frame, text="Players & Hero Picks (6v6)", padding=6)
         pick_frame.pack(fill="x", pady=6)
         
         player_entries, pick_combos = [], []
 
-        # Headers
         ttk.Label(pick_frame, text="Player Name").grid(row=0, column=1, pady=2)
         ttk.Label(pick_frame, text="Hero Pick").grid(row=0, column=2, pady=2)
 
@@ -288,56 +387,76 @@ class OverlayController(tk.Tk):
             for cb in pick_combos:
                 cb.set("None")
                 cb.event_generate("<<ComboboxSelected>>") 
+            for cb in ban_combos:
+                cb.set("None")
+                cb.event_generate("<<ComboboxSelected>>") 
             self.push_updates()
 
-        ttk.Button(pick_frame, text="Clear All Picks", command=clear_picks).grid(row=7, column=1, columnspan=2, pady=10, sticky="ew")
+        ttk.Button(pick_frame, text="Clear All Picks & Bans", command=clear_picks).grid(row=7, column=1, columnspan=2, pady=10, sticky="ew")
 
         return {
             "name": team_name_entry, 
             "score": score_entry,
             "logo": logo_path_var,
+            "color": color_var,
+            "color_btn": color_btn,
             "players": player_entries, 
-            "picks": pick_combos
+            "picks": pick_combos,
+            "bans": ban_combos,
+            "rebuild_bans": build_ban_ui
         }
 
     def swap_teams(self):
-        blue_name = self.blue_widgets["name"].get()
-        blue_score = self.blue_widgets["score"].get()
-        blue_logo = self.blue_widgets["logo"].get()
-        blue_players = [entry.get() for entry in self.blue_widgets["players"]]
+        team1_name = self.team1_widgets["name"].get()
+        team1_score = self.team1_widgets["score"].get()
+        team1_logo = self.team1_widgets["logo"].get()
+        team1_players = [entry.get() for entry in self.team1_widgets["players"]]
         
-        red_name = self.red_widgets["name"].get()
-        red_score = self.red_widgets["score"].get()
-        red_logo = self.red_widgets["logo"].get()
-        red_players = [entry.get() for entry in self.red_widgets["players"]]
+        team2_name = self.team2_widgets["name"].get()
+        team2_score = self.team2_widgets["score"].get()
+        team2_logo = self.team2_widgets["logo"].get()
+        team2_players = [entry.get() for entry in self.team2_widgets["players"]]
         
-        self.blue_widgets["name"].delete(0, tk.END)
-        self.blue_widgets["name"].insert(0, red_name)
-        self.red_widgets["name"].delete(0, tk.END)
-        self.red_widgets["name"].insert(0, blue_name)
+        self.team1_widgets["name"].delete(0, tk.END)
+        self.team1_widgets["name"].insert(0, team2_name)
+        self.team2_widgets["name"].delete(0, tk.END)
+        self.team2_widgets["name"].insert(0, team1_name)
 
-        self.blue_widgets["score"].delete(0, tk.END)
-        self.blue_widgets["score"].insert(0, red_score)
-        self.red_widgets["score"].delete(0, tk.END)
-        self.red_widgets["score"].insert(0, blue_score)
+        self.team1_widgets["score"].delete(0, tk.END)
+        self.team1_widgets["score"].insert(0, team2_score)
+        self.team2_widgets["score"].delete(0, tk.END)
+        self.team2_widgets["score"].insert(0, team1_score)
         
-        self.blue_widgets["logo"].set(red_logo)
-        self.red_widgets["logo"].set(blue_logo)
+        self.team1_widgets["logo"].set(team2_logo)
+        self.team2_widgets["logo"].set(team1_logo)
+
+        # Swap dynamic bans
+        team1_bans = [cb.get() for cb in self.team1_widgets["bans"]]
+        team2_bans = [cb.get() for cb in self.team2_widgets["bans"]]
+        state["team1"]["bans"] = team2_bans
+        state["team2"]["bans"] = team1_bans
+        self.team1_widgets["rebuild_bans"]()
+        self.team2_widgets["rebuild_bans"]()
 
         for i in range(6):
-            self.blue_widgets["players"][i].delete(0, tk.END)
-            self.blue_widgets["players"][i].insert(0, red_players[i])
-            self.red_widgets["players"][i].delete(0, tk.END)
-            self.red_widgets["players"][i].insert(0, blue_players[i])
+            self.team1_widgets["players"][i].delete(0, tk.END)
+            self.team1_widgets["players"][i].insert(0, team2_players[i])
+            self.team2_widgets["players"][i].delete(0, tk.END)
+            self.team2_widgets["players"][i].insert(0, team1_players[i])
         
         self.push_updates()
 
     def push_updates(self):
         state["patch"] = self.patch_entry.get()
         state["sponsor"] = self.sponsor_entry.get()
+        state["sponsor_logo"] = self.sponsor_logo_var.get()
+        state["match_format"] = self.format_entry.get()
+        state["use_hero_names"] = self.use_hero_names_var.get()
+        
 
-        for side_key, widgets in [("blue", self.blue_widgets), ("red", self.red_widgets)]:
+        for side_key, widgets in [("team1", self.team1_widgets), ("team2", self.team2_widgets)]:
             state[side_key]["name"] = widgets["name"].get()
+            state[side_key]["color"] = widgets["color"].get()
             
             try:
                 state[side_key]["score"] = int(widgets["score"].get())
@@ -347,6 +466,7 @@ class OverlayController(tk.Tk):
             state[side_key]["logo"] = widgets["logo"].get()
             state[side_key]["players"] = [entry.get() for entry in widgets["players"]]
             state[side_key]["picks"] = [cb.get() for cb in widgets["picks"]]
+            state[side_key]["bans"] = [cb.get() for cb in widgets["bans"]]
 
         try:
             with open(SAVE_FILE, "w") as f:
