@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Deadlock In-Game Overlay</title>
+    <title>Deadlock Full Top Bar</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap');
 
-        /* --- CUSTOM DEADLOCK FONT --- */
+        /* --- FONT --- */
         @font-face {
             font-family: 'ValvePulp';
             src: url('valvepulp-bold.ttf') format('truetype');
@@ -19,104 +19,268 @@
             height: 1080px;
             background-color: transparent; 
             color: white;
-            font-family: 'ValvePulp', 'Georgia', serif; 
-            letter-spacing: 1px;
+            font-family: 'Oswald', sans-serif;
             overflow: hidden;
             position: relative;
         }
 
-        /* --- SCOREBOARD CONTAINERS --- */
-        .scoreboard {
+        /* --- FULL WIDTH TOP BAR --- */
+        .top-bar {
             position: absolute;
-            top: 15px; 
+            top: 0;
+            left: 0;
+            width: 1920px;
+            height: 60px;
+            background: linear-gradient(180deg, rgba(15, 15, 15, 1) 0%, rgba(20, 20, 20, 0.95) 100%);
+            border-bottom: 2px solid;
+            border-image: linear-gradient(to right, #ffb840 50%, #4080ff 50%) 1; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            box-sizing: border-box;
+        }
+
+        /* --- OUTER INFO PANELS --- */
+        .side-info {
+            width: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 20px;
+            background-color: rgba(0, 0, 0, 0.4);
+            box-sizing: border-box;
+        }
+
+        .side-info.left { align-items: flex-start; border-right: 1px solid rgba(255,255,255,0.1); }
+        .side-info.right { align-items: flex-end; border-left: 1px solid rgba(255,255,255,0.1); text-align: right; }
+
+        .info-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .info-sub {
+            font-size: 16px;
+            color: #aaaaaa;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* --- TEAM CONTAINERS --- */
+        .team-container {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        /* Team 2 reverses the layout */
+        #team2-container { flex-direction: row-reverse; }
+
+        .team-logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            padding: 5px 12.5px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+        }
+
+        /* Pushes Team 1's logo further left */
+        #team1-container .team-logo {
+            margin-right: 40px;
+        }
+
+        /* Pushes Team 2's logo further right*/
+        #team2-container .team-logo {
+            margin-left: 40px;
+        }
+
+        .team-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-bottom: 22px;
+        }
+
+        /* Top row of team info: Name + Bans */
+        .team-header {
             display: flex;
             flex-direction: row;
             align-items: center;
             gap: 15px;
+            padding: 0 10px;
+            height: 45px;
         }
-
-        /* Positions */
-        #team1-ingame { left: 20px; }
-        #team2-ingame { right: 20px; }
-
-        /* --- ELEMENTS --- */
-        .team-logo {
-            width: 90px;
-            height: 90px;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,1));
-        }
+        
+        #team2-container .team-header { flex-direction: row-reverse; }
 
         .team-name {
-            font-size: 26px; 
+            font-family: 'ValvePulp', 'Georgia', serif;
+            font-size: 32px;
             font-weight: bold;
             text-transform: uppercase;
-            line-height: 1.1;
-            max-width: 200px; 
-            text-align: center;
-            
-            text-shadow: 
-                -2px -2px 0 #000,  
-                 2px -2px 0 #000,
-                -2px  2px 0 #000,
-                 2px  2px 0 #000,
-                 0px  4px 10px rgba(0,0,0,0.8);
+            color: #ffffff;
+            text-shadow: 0 2px 5px rgba(0,0,0,1);
+            letter-spacing: 1px;
+            white-space: nowrap;
         }
 
-        /* --- BOTTOM RIGHT MATCH INFO --- */
-        .match-info-bar {
+        /* BANS */
+        .bans-wrapper {
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+        }
+
+        .ban-icon {
+            width: 24px;
+            height: 24px;
+            background-size: cover;
+            background-position: center top;
+            border-radius: 50%; /* Circle bans like the mockup */
+            border: 2px solid #ff4d4d;
+            filter: grayscale(100%);
+        }
+
+        /* --- PLAYER ROW --- */
+        .player-row {
             position: absolute;
-            bottom: 0px; /* Pushes it to the bottom */
-            right: 0px;  /* Pushes it to the right */
-            
+            bottom: 0;
+            height: 22px;
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 12px;
-            
-            /* 100% Opacity Solid Dark Background */
-            background-color: #0d0d0d; 
-            padding: 3px 10px;
-            border-radius: 4px;
-            border: 1px solid rgb(0, 0, 0); /* Slight border to make it pop */
-            
-            font-family: 'Oswald', sans-serif;
-            font-size: 14px;
-            font-weight: bold;
-            text-transform: uppercase;
-            color: #eeeeee;
-            
-            text-shadow: 0px 2px 4px rgba(0,0,0,0.9);
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        
+            gap: 13px; 
+            padding: 0 10px;
         }
 
-        .divider {
-            color: #ffb840; /* Deadlock Amber accent color */
-            font-size: 16px;
+        #team1-players {
+            /* Anchors the right edge to the exact center of the screen */
+            right: 50%; 
+            margin-right: 99px; 
         }
+
+        #team2-players {
+            /* Anchors the left edge to the exact center of the screen */
+            left: 50%; 
+            margin-left: 99px; 
+        }
+
+        .player-name {
+            font-size: 13px;
+            color: #cccccc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            
+            width: 75px; 
+            text-align: center;
+        }
+
+        /* --- CENTER BRANDING --- */
+        .center-brand {
+            width: 160px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            background-color: #080808;
+            border-left: 2px solid rgba(255,255,255,0.1);
+            border-right: 2px solid rgba(255,255,255,0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .center-deadlock-logo {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+        }
+
+        .center-deadlock-text {
+            font-family: 'ValvePulp', 'Georgia', serif;
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            margin-top: 4px;
+        }
+
+        .center-brand img {
+            max-width: 140px;
+            max-height: 55px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+        }
+
     </style>
 </head>
 <body>
 
-    <!-- TEAM 1 (TOP LEFT): Logo -> Name -->
-    <div id="team1-ingame" class="scoreboard">
-        <img id="team1-logo" class="team-logo" src="" style="display: none;">
-        <div id="team1-name" class="team-name">PFW</div>
-    </div>
-
-    <!-- CENTER MATCH INFO -->
-    <div id="center-ingame-info" class="match-info-bar">
-        <span id="ingame-sponsor">PFW ESPORTS</span>
-        <span class="divider">•</span>
-        <span id="ingame-league">WEEK 1</span>
-        <span class="divider">•</span>
-        <span id="ingame-format">BEST OF 2</span>
+    <div class="top-bar">
         
-    </div>
+        <!-- LEFT INFO -->
+        <div class="side-info left">
+            <div class="info-title" id="ingame-sponsor">PFW ESPORTS</div>
+            
+            <div class="info-sub" id="ingame-format">BEST OF 3</div>
+        </div>
 
-    <!-- TEAM 2 (TOP RIGHT): Name -> Logo -->
-    <div id="team2-ingame" class="scoreboard">
-        <div id="team2-name" class="team-name">OPP</div>
-        <img id="team2-logo" class="team-logo" src="" style="display: none;">
+        <!-- TEAM 1 (Name, Logo, Bans) -->
+        <div class="team-container" id="team1-container">
+            <img class="team-logo" id="team1-logo" src="" style="display:none;">
+            <div class="team-content">
+                <div class="team-header">
+                    <div class="team-name" id="team1-name">TEAM 1</div>
+                    <div class="bans-wrapper" id="team1-bans"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER BRANDING (DEADLOCK) -->
+        <div class="center-brand">
+            <img class="center-deadlock-logo" src="deadlock_logo.png" alt="Deadlock Logo">
+        </div>
+
+        <!-- TEAM 2 (Name, Logo, Bans) -->
+        <div class="team-container" id="team2-container">
+            <img class="team-logo" id="team2-logo" src="" style="display:none;">
+            <div class="team-content">
+                <div class="team-header">
+                    <div class="team-name" id="team2-name">TEAM 2</div>
+                    <div class="bans-wrapper" id="team2-bans"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT INFO -->
+        <div class="side-info right">
+            <div class="info-title" id="ingame-league">PFW ESPORTS</div>
+            <div class="info-sub" id="ingame-right-sub">Season 3</div>
+        </div>
+
+        <!-- ABSOLUTE POSITIONED PLAYER ROWS -->
+        <div class="player-row" id="team1-players"></div>
+        <div class="player-row" id="team2-players"></div>
+
     </div>
 
     <script>
@@ -126,25 +290,49 @@
             const data = JSON.parse(event.data);
             const timeCache = new Date().getTime();
 
-            // Update Center Match Info
+            // Meta Info
+            document.getElementById('ingame-league').textContent = data.patch || "LEAGUE MATCH";
             document.getElementById('ingame-format').textContent = data.match_format || "BEST OF 3";
-            document.getElementById('ingame-league').textContent = data.patch || "";
-            document.getElementById('ingame-sponsor').textContent = data.sponsor || "";
+            document.getElementById('ingame-sponsor').textContent = data.sponsor || "SPONSOR";
+            document.getElementById('ingame-right-sub').textContent = data.right_sub || "";
+
+            const useHeroNames = data.use_hero_names;
 
             // Update Teams
             ['team1', 'team2'].forEach(side => {
                 const teamData = data[side];
 
-                // Update Text
+                // Name & Logo
                 document.getElementById(`${side}-name`).textContent = teamData.name;
-                
-                // Update Logo
                 const logoEl = document.getElementById(`${side}-logo`);
                 if (teamData.logo) {
                     logoEl.src = teamData.logo + "?t=" + timeCache;
                     logoEl.style.display = 'block';
                 } else {
                     logoEl.style.display = 'none';
+                }
+
+                // Players Row
+                const playersContainer = document.getElementById(`${side}-players`);
+                playersContainer.innerHTML = '';
+                for(let i = 0; i < 6; i++) {
+                    let displayName = teamData.players && teamData.players[i] ? teamData.players[i] : `Player ${i+1}`;
+                    if (useHeroNames && teamData.picks && teamData.picks[i] && teamData.picks[i] !== "None") {
+                        displayName = teamData.picks[i];
+                    }
+                    playersContainer.innerHTML += `<div class="player-name">${displayName}</div>`;
+                }
+
+                // Bans
+                const bansContainer = document.getElementById(`${side}-bans`);
+                bansContainer.innerHTML = ''; 
+                if (teamData.bans) {
+                    teamData.bans.forEach(ban => {
+                        if (ban && ban !== "None") {
+                            const fileName = ban.toLowerCase().replace(/[^a-z]/g, '');
+                            bansContainer.innerHTML += `<div class="ban-icon" style="background-image: url('charicons/${fileName}.png')"></div>`;
+                        }
+                    });
                 }
             });
         };
