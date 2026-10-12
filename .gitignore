@@ -1,0 +1,15 @@
+# PyInstaller folders
+build/
+dist/
+*.spec
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local save state (so you don't overwrite it across PCs)
+deadlock_draft_state.json
+
+# Optional: Ignore images if they are too large for GitHub, 
+# or leave this out if you want to back them up.
+# images/

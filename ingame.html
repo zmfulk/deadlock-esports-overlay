@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deadlock In-Game Overlay</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap');
+
+        /* --- CUSTOM DEADLOCK FONT --- */
+        @font-face {
+            font-family: 'ValvePulp';
+            src: url('valvepulp-bold.ttf') format('truetype');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1920px;
+            height: 1080px;
+            background-color: transparent; 
+            color: white;
+            font-family: 'ValvePulp', 'Georgia', serif; 
+            letter-spacing: 1px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- SCOREBOARD CONTAINERS --- */
+        .scoreboard {
+            position: absolute;
+            top: 15px; 
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Positions */
+        #team1-ingame { left: 20px; }
+        #team2-ingame { right: 20px; }
+
+        /* --- ELEMENTS --- */
+        .team-logo {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,1));
+        }
+
+        .team-name {
+            font-size: 26px; 
+            font-weight: bold;
+            text-transform: uppercase;
+            line-height: 1.1;
+            max-width: 200px; 
+            text-align: center;
+            
+            text-shadow: 
+                -2px -2px 0 #000,  
+                 2px -2px 0 #000,
+                -2px  2px 0 #000,
+                 2px  2px 0 #000,
+                 0px  4px 10px rgba(0,0,0,0.8);
+        }
+
+        /* --- BOTTOM RIGHT MATCH INFO --- */
+        .match-info-bar {
+            position: absolute;
+            bottom: 0px; /* Pushes it to the bottom */
+            right: 0px;  /* Pushes it to the right */
+            
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+            
+            /* 100% Opacity Solid Dark Background */
+            background-color: #0d0d0d; 
+            padding: 3px 10px;
+            border-radius: 4px;
+            border: 1px solid rgb(0, 0, 0); /* Slight border to make it pop */
+            
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #eeeeee;
+            
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.9);
+        }
+
+        .divider {
+            color: #ffb840; /* Deadlock Amber accent color */
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TEAM 1 (TOP LEFT): Logo -> Name -->
+    <div id="team1-ingame" class="scoreboard">
+        <img id="team1-logo" class="team-logo" src="" style="display: none;">
+        <div id="team1-name" class="team-name">PFW</div>
+    </div>
+
+    <!-- CENTER MATCH INFO -->
+    <div id="center-ingame-info" class="match-info-bar">
+        <span id="ingame-sponsor">PFW ESPORTS</span>
+        <span class="divider">•</span>
+        <span id="ingame-league">WEEK 1</span>
+        <span class="divider">•</span>
+        <span id="ingame-format">BEST OF 2</span>
+        
+    </div>
+
+    <!-- TEAM 2 (TOP RIGHT): Name -> Logo -->
+    <div id="team2-ingame" class="scoreboard">
+        <div id="team2-name" class="team-name">OPP</div>
+        <img id="team2-logo" class="team-logo" src="" style="display: none;">
+    </div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8765');
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const timeCache = new Date().getTime();
+
+            // Update Center Match Info
+            document.getElementById('ingame-format').textContent = data.match_format || "BEST OF 3";
+            document.getElementById('ingame-league').textContent = data.patch || "";
+            document.getElementById('ingame-sponsor').textContent = data.sponsor || "";
+
+            // Update Teams
+            ['team1', 'team2'].forEach(side => {
+                const teamData = data[side];
+
+                // Update Text
+                document.getElementById(`${side}-name`).textContent = teamData.name;
+                
+                // Update Logo
+                const logoEl = document.getElementById(`${side}-logo`);
+                if (teamData.logo) {
+                    logoEl.src = teamData.logo + "?t=" + timeCache;
+                    logoEl.style.display = 'block';
+                } else {
+                    logoEl.style.display = 'none';
+                }
+            });
+        };
+    </script>
+</body>
+</html>
