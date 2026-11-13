@@ -43,7 +43,7 @@
 
         /* --- OUTER INFO PANELS --- */
         .side-info {
-            width: 250px;
+            width: 240px; /* Reduced from 260px to push the logos further out */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -88,19 +88,14 @@
             width: 50px;
             height: 50px;
             object-fit: contain;
-            padding: 5px 12.5px;
+            /* TUNE THIS: The second number (10px) controls the exact gap between logo and name */
+            padding: 5px 15px; 
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
         }
 
-        /* Pushes Team 1's logo further left */
-        #team1-container .team-logo {
-            margin-right: 40px;
-        }
-
-        /* Pushes Team 2's logo further right*/
-        #team2-container .team-logo {
-            margin-left: 40px;
-        }
+        /* We reset these to 0 so the names statically hug the logos again */
+        #team1-container .team-logo { margin-right: 0px; }
+        #team2-container .team-logo { margin-left: 0px; }
 
         .team-content {
             flex: 1;
@@ -110,13 +105,22 @@
             padding-bottom: 22px;
         }
 
-        /* Top row of team info: Name + Bans */
+        /* Pushes Team 1's name right (closer to center) */
+        #team1-container .team-content {
+            padding-left: 10px; /* Adjust this number to move the name more or less */
+        }
+
+        /* Pushes Team 2's name left (closer to center) */
+        #team2-container .team-content {
+            padding-right: 10px; /* Adjust this number to move the name more or less */
+        }
+
+        /* Top row of team info: Name */
         .team-header {
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 15px;
-            padding: 0 10px;
+            padding: 00; /* Removed padding to allow a tighter hug */
             height: 45px;
         }
         
@@ -135,9 +139,27 @@
 
         /* BANS */
         .bans-wrapper {
+            position: absolute;
+            top: 6px; /* TUNE THIS: Adjusts vertical alignment with the team name */
             display: flex;
-            flex-direction: row;
-            gap: 5px;
+            gap: 6px;
+        }
+
+        #team1-bans {
+            /* Anchors the right edge to the exact center of the screen */
+            right: 50%;
+            /* TUNE THIS: Distance from the center Deadlock logo */
+            margin-right: 100px; 
+            /* Flips the row so Ban 1 is closest to the center */
+            flex-direction: row-reverse; 
+        }
+
+        #team2-bans {
+            /* Anchors the left edge to the exact center of the screen */
+            left: 50%;
+            /* TUNE THIS: Distance from the center Deadlock logo */
+            margin-left: 100px; 
+            flex-direction: row; 
         }
 
         .ban-icon {
@@ -181,7 +203,7 @@
             font-size: 13px;
             color: #cccccc;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0px;
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
@@ -250,7 +272,6 @@
             <div class="team-content">
                 <div class="team-header">
                     <div class="team-name" id="team1-name">TEAM 1</div>
-                    <div class="bans-wrapper" id="team1-bans"></div>
                 </div>
             </div>
         </div>
@@ -266,7 +287,6 @@
             <div class="team-content">
                 <div class="team-header">
                     <div class="team-name" id="team2-name">TEAM 2</div>
-                    <div class="bans-wrapper" id="team2-bans"></div>
                 </div>
             </div>
         </div>
@@ -277,9 +297,13 @@
             <div class="info-sub" id="ingame-right-sub">Season 3</div>
         </div>
 
-        <!-- ABSOLUTE POSITIONED PLAYER ROWS -->
+        <!-- ABSOLUTE POSITIONED PLAYER ROWS & BANS -->
         <div class="player-row" id="team1-players"></div>
         <div class="player-row" id="team2-players"></div>
+        
+        <div class="bans-wrapper" id="team1-bans"></div>
+        <div class="bans-wrapper" id="team2-bans"></div>
+    </div> <!-- END OF TOP-BAR -->
 
     </div>
 
@@ -296,11 +320,12 @@
             document.getElementById('ingame-sponsor').textContent = data.sponsor || "SPONSOR";
             document.getElementById('ingame-right-sub').textContent = data.right_sub || "";
 
-            const useHeroNames = data.use_hero_names;
+            
 
             // Update Teams
             ['team1', 'team2'].forEach(side => {
                 const teamData = data[side];
+                const useHeroNames = teamData.use_hero_names;
 
                 // Name & Logo
                 document.getElementById(`${side}-name`).textContent = teamData.name;

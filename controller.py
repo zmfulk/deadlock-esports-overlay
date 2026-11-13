@@ -35,12 +35,13 @@ default_state = {
     "sponsor": "College Deadlock",
     "sponsor_logo": "collegedeadlock.png",
     "match_format": "Best of 2",
-    "use_hero_names": False,
+    
     "team1": {
         "name": "PFW",
         "logo": "",
         "score": 0,
         "color": "#4080ff",
+        "use_hero_names": False,
         "players": ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5", "Player 6"],
         "picks": ["None", "None", "None", "None", "None", "None"],
         "bans": ["None", "None"]
@@ -50,6 +51,7 @@ default_state = {
         "logo": "",
         "score": 0,
         "color": "#ffb840",
+        "use_hero_names": False,
         "players": ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5", "Player 6"],
         "picks": ["None", "None", "None", "None", "None", "None"],
         "bans": ["None", "None"]
@@ -238,12 +240,7 @@ class OverlayController(tk.Tk):
         self.format_entry.insert(0, state.get("match_format", "Best of 3"))
         self.format_entry.grid(row=1, column=3, padx=4)
 
-        # Row 2: Override Checkbox & Swap Button
-        self.use_hero_names_var = tk.BooleanVar(value=state.get("use_hero_names", False))
-        ttk.Checkbutton(
-            meta_frame, text="Override Player Names with Hero Names",
-            variable=self.use_hero_names_var, command=self.push_updates
-        ).grid(row=2, column=0, columnspan=4, pady=5, sticky="w", padx=4)
+        
 
         ttk.Button(
             meta_frame, text="Swap Teams ⇄", command=self.swap_teams
@@ -383,6 +380,9 @@ class OverlayController(tk.Tk):
             cb.bind("<<ComboboxSelected>>", lambda e: self.push_updates())
             pick_combos.append(cb)
 
+            ttk.Button(pick_frame, text="▲", width=2, command=lambda idx=i, team=side_key: self.move_up(team, idx)).grid(row=r, column=3, padx=1)
+            ttk.Button(pick_frame, text="▼", width=2, command=lambda idx=i, team=side_key: self.move_down(team, idx)).grid(row=r, column=4, padx=1)
+
         def clear_picks():
             for cb in pick_combos:
                 cb.set("None")
@@ -394,6 +394,14 @@ class OverlayController(tk.Tk):
 
         ttk.Button(pick_frame, text="Clear All Picks & Bans", command=clear_picks).grid(row=7, column=1, columnspan=2, pady=10, sticky="ew")
 
+        use_hero_names_var = tk.BooleanVar(value=state[side_key].get("use_hero_names", False))
+
+        ttk.Checkbutton(
+            pick_frame, text="Display Hero Names Over Player Names",
+            variable=use_hero_names_var,
+            command=self.push_updates
+        ).grid(row=8, column=0, columnspan=5, pady=5)
+
         return {
             "name": team_name_entry, 
             "score": score_entry,
@@ -403,7 +411,8 @@ class OverlayController(tk.Tk):
             "players": player_entries, 
             "picks": pick_combos,
             "bans": ban_combos,
-            "rebuild_bans": build_ban_ui
+            "rebuild_bans": build_ban_ui,
+            "use_hero_names": use_hero_names_var
         }
 
     def swap_teams(self):
@@ -443,7 +452,13 @@ class OverlayController(tk.Tk):
             self.team1_widgets["players"][i].insert(0, team2_players[i])
             self.team2_widgets["players"][i].delete(0, tk.END)
             self.team2_widgets["players"][i].insert(0, team1_players[i])
-        
+
+        # Swap Checkbox states
+        team1_use_hero = self.team1_widgets["use_hero_names"].get()
+        team2_use_hero = self.team2_widgets["use_hero_names"].get()
+        self.team1_widgets["use_hero_names"].set(team2_use_hero)
+        self.team2_widgets["use_hero_names"].set(team1_use_hero)
+
         self.push_updates()
 
     def push_updates(self):
@@ -451,12 +466,12 @@ class OverlayController(tk.Tk):
         state["sponsor"] = self.sponsor_entry.get()
         state["sponsor_logo"] = self.sponsor_logo_var.get()
         state["match_format"] = self.format_entry.get()
-        state["use_hero_names"] = self.use_hero_names_var.get()
         
 
         for side_key, widgets in [("team1", self.team1_widgets), ("team2", self.team2_widgets)]:
             state[side_key]["name"] = widgets["name"].get()
             state[side_key]["color"] = widgets["color"].get()
+            state[side_key]["use_hero_names"] = widgets["use_hero_names"].get()
             
             try:
                 state[side_key]["score"] = int(widgets["score"].get())
@@ -475,6 +490,47 @@ class OverlayController(tk.Tk):
             print(f"Error writing save file: {e}")
 
         trigger_broadcast()
+
+
+
+
+
+    def move_up(self, team_key, index):
+        if index > 0:
+            self.swap_players(team_key, index, index - 1)
+
+    def move_down(self, team_key, index):
+        if index < 5:  # 5 is the max index for 6 players
+            self.swap_players(team_key, index, index + 1)
+
+    def swap_players(self, team_key, i, j):
+        # Determine which team's dictionary we are modifying
+        widgets = self.team1_widgets if team_key == "team1" else self.team2_widgets
+        
+        # Swap the Player Names
+        entry_i = widgets["players"][i]
+        entry_j = widgets["players"][j]
+        
+        name_i = entry_i.get()
+        name_j = entry_j.get()
+        
+        entry_i.delete(0, tk.END)
+        entry_i.insert(0, name_j)
+        
+        entry_j.delete(0, tk.END)
+        entry_j.insert(0, name_i)
+        
+        # Swap the Hero Picks
+        cb_i = widgets["picks"][i]
+        cb_j = widgets["picks"][j]
+        
+        pick_i = cb_i.get()
+        pick_j = cb_j.get()
+        
+        cb_i.set(pick_j)
+        cb_j.set(pick_i)
+
+
 
 if __name__ == "__main__":
     threading.Thread(target=start_server, daemon=True).start()
