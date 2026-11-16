@@ -32,6 +32,28 @@
             justify-content: center; 
             gap: 40px; 
             box-sizing: border-box;
+            position: relative; 
+            z-index: 0;
+        }
+
+        /* --- TOP BACKGROUND LAYER (bg1.png) --- */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('bg1.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            /* TUNE THIS: 0.0 is invisible, 1.0 is full bold */
+            opacity: 0.4; 
+            
+            /* Keeps the image behind all your draft boxes and text */
+            z-index: -1; 
         }
 
         /* --- TEAM SECTIONS (Row Layout) --- */
@@ -104,9 +126,12 @@
             background-size: cover;
             background-position: center top;
             border-radius: 4px;
-            border: 2px solid #ff4d4d;
-            filter: grayscale(100%) opacity(0.6); 
-            box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
+            opacity: 0; /* Starts invisible for the fade */
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         /* --- HORIZONTAL ROSTERS --- */
@@ -171,6 +196,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            text-transform: uppercase;
         }
 
         .player-name.is-hero {
@@ -404,19 +430,48 @@
                 // Bans Render
                 const bansContainer = document.getElementById(`${side}-bans`);
                 const bansLabel = document.getElementById(`${side}-bans-label`);
-                bansContainer.innerHTML = ''; 
                 
-                let hasBans = false;
-                if (teamData.bans) {
-                    teamData.bans.forEach(ban => {
-                        if (ban && ban !== "None") {
-                            hasBans = true;
-                            const fileName = ban.toLowerCase().replace(/[^a-z]/g, '');
-                            bansContainer.innerHTML += `<div class="ban-icon" style="background-image: url('charicons/${fileName}.png')"></div>`;
-                        }
-                    });
+                // Get the full list of bans from the controller, including "None"
+                const bansList = teamData.bans || [];
+                
+                // Always show the "BANS" label if there are ban slots allocated in the GUI
+                bansLabel.style.display = bansList.length > 0 ? 'block' : 'none';
+
+                // 1. Sync the exact number of HTML placeholders to match the controller slots
+                while (bansContainer.children.length > bansList.length) {
+                    bansContainer.removeChild(bansContainer.lastChild);
                 }
-                bansLabel.style.display = hasBans ? 'block' : 'none';
+                while (bansContainer.children.length < bansList.length) {
+                    const newSlot = document.createElement('div');
+                    newSlot.className = 'ban-icon';
+                    bansContainer.appendChild(newSlot);
+                }
+
+                // 2. Update each slot (Invisible placeholder vs Faded-in image)
+                bansList.forEach((ban, index) => {
+                    let banEl = bansContainer.children[index];
+
+                    if (!ban || ban === "None") {
+                        // Keep the slot to hold the layout space, but make it invisible
+                        banEl.dataset.currentBan = "None";
+                        banEl.style.backgroundImage = "none";
+                        banEl.style.animation = 'none';
+                        banEl.style.opacity = '0'; 
+                    } else {
+                        // If it's a real hero, fade it in (only if it just changed)
+                        const fileName = ban.toLowerCase().replace(/[^a-z]/g, '');
+                        
+                        if (banEl.dataset.currentBan !== ban) {
+                            banEl.dataset.currentBan = ban;
+                            banEl.style.backgroundImage = `url('minicharicons/${fileName}.png')`;
+                            
+                            // Reset and trigger the fade-in animation
+                            banEl.style.animation = 'none';
+                            void banEl.offsetWidth; // Force DOM reflow
+                            banEl.style.animation = 'fadeIn 0.5s ease-out forwards';
+                        }
+                    }
+                });
 
                 // Colors
                 const teamColor = teamData.color || (side === 'team1' ? '#4080ff' : '#ffb840');

@@ -22,7 +22,7 @@ SAVE_FILE = os.path.join(BASE_DIR, "deadlock_draft_state.json")
 
 # Static list of Deadlock Heroes
 HERO_LIST = [
-    "None", "Abrams", "Apollo", "Baba", "Billy", "Bebop", "Mirage", "Calico", "Celeste", 
+    "None", "Abrams", "Apollo", "Baba", "Billy", "Bebop", "Calico", "Celeste", 
     "Deadman Danny", "The Doorman", "Drifter", "Dynamo", "Graves", "Grey Talon", "Haze", 
     "Holliday", "Infernus", "Ivy", "Kelvin", "Lady Geist", "Lash", "McGinnis", 
     "Mina", "Mirage", "Mo & Krill", "Nurse Harrow", "Paige", "Paradox", "Pocket", 
