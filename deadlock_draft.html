@@ -173,6 +173,11 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
+        .player-name.is-hero {
+            font-style: italic;
+            color: #e6e6e6;
+        }
+
         /* --- CENTER SECTION (Layout & Score Box) --- */
         .center-section {
             display: flex;
@@ -381,10 +386,10 @@
             t2ScoreEl.style.color = t2Color;
             t2ScoreEl.style.textShadow = `0 0 15px ${t2Color}66`;
 
-            const useHeroNames = data.use_hero_names;
-
             ['team1', 'team2'].forEach(side => {
                 const teamData = data[side];
+
+                const useHeroNames = teamData.use_hero_names;
                 
                 // Header & Logo
                 document.getElementById(`${side}-name`).textContent = teamData.name;
@@ -452,13 +457,16 @@
                         heroBoxEl.style.backgroundImage = "none";
                         heroBoxEl.style.animation = 'none';
                     }
+                    
 
-                    if (useHeroNames) {
+                    if (useHeroNames && heroName !== "") {
                         playerEl.textContent = heroName;
                         heroNameEl.textContent = ""; 
+                        playerEl.classList.add("is-hero"); // Adds the italic style
                     } else {
                         playerEl.textContent = playerName;
                         heroNameEl.textContent = heroName;
+                        playerEl.classList.remove("is-hero"); // Removes the italic style
                     }
                 }
             });
