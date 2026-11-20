@@ -1,15 +1,19 @@
-# PyInstaller folders
+# Windows junk
+_desktop.ini
+desktop.ini
+Thumbs.db
+
+# PyInstaller build artifacts
 build/
 dist/
 *.spec
-
-# Python cache
 __pycache__/
-*.pyc
 
-# Local save state (so you don't overwrite it across PCs)
+# Runtime / dynamically generated files
 deadlock_draft_state.json
+team1_logo.*
+team2_logo.*
+center_sponsor_logo.*
 
-# Optional: Ignore images if they are too large for GitHub, 
-# or leave this out if you want to back them up.
-# images/
+# Uncomment the line below if you decide to move controller.exe to GitHub Releases
+# controller.exe

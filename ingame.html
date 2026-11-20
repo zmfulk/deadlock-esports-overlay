@@ -163,13 +163,29 @@
         }
 
         .ban-icon {
-            width: 24px;
-            height: 24px;
-            background-size: cover;
-            background-position: center top;
-            border-radius: 50%; /* Circle bans like the mockup */
-            border: 2px solid #ff4d4d;
-            filter: grayscale(100%);
+            width: 28px;
+            height: 28px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 4px;
+        }
+
+        .bans-wrapper {
+            position: absolute;
+            top: 4px; /* Slightly adjusted for 28px icons */
+            display: flex;
+            align-items: center; /* Vertically centers the symbol with the icons */
+            gap: 6px;
+        }
+
+        .bans-wrapper:not(:empty)::before {
+            content: "⊘";
+            color: #ff4d4d;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1;
+            margin: 0 2px;
         }
 
         /* --- PLAYER ROW --- */
@@ -355,7 +371,7 @@
                     teamData.bans.forEach(ban => {
                         if (ban && ban !== "None") {
                             const fileName = ban.toLowerCase().replace(/[^a-z]/g, '');
-                            bansContainer.innerHTML += `<div class="ban-icon" style="background-image: url('charicons/${fileName}.png')"></div>`;
+                            bansContainer.innerHTML += `<div class="ban-icon" style="background-image: url('minicharicons/${fileName}.png')"></div>`;
                         }
                     });
                 }
